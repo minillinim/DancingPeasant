@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 ###############################################################################
 #                                                                             #
-#    DancingPeasant.py                                                         #
+#    DancingPeasant.py                                                        #
 #                                                                             #
-#    Description!!                                                            #
+#    Implement a collection of CSV files in SQLite land.                      #
 #                                                                             #
 #    Copyright (C) Michael Imelfort                                           #
 #                                                                             #
@@ -25,7 +25,7 @@
 ###############################################################################
 
 __author__ = "Michael Imelfort"
-__copyright__ = "Copyright 2013"
+__copyright__ = "Copyright 2014"
 __credits__ = ["Michael Imelfort"]
 __license__ = "GPLv3"
 __version__ = "0.0.1"
@@ -38,8 +38,8 @@ __status__ = "Dev"
 ###############################################################################
 ###############################################################################
 
-class TemplateClass():
-    """Utilities wrapper"""
+class BaseFile():
+    """Class for implementing collection of files within a SQL database"""
     def __init__(self): pass
 
     def sayHi(self):

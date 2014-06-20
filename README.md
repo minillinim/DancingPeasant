@@ -2,11 +2,13 @@
 
 ## Overview
 
+This is an(other) experiment in moving away from CSV and towards SQL (specifically SQLite).
+Hopefully this will be a base class that will give me SQL-type data files with history etc and a
+means to manage adding/removing tables and validating data.
+
+Wish me luck!
+
 ## Installation
-
-Should be as simple as
-
-    pip install DancingPeasant
 
 ## Example usage
 
@@ -22,4 +24,4 @@ This software is currently unpublished
 
 ## Copyright
 
-Copyright (c) 2013 Michael Imelfort. See LICENSE.txt for further details.
+Copyright (c) 2014 Michael Imelfort. See LICENSE.txt for further details.

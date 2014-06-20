@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 ###############################################################################
 #                                                                             #
-#    DancingPeasant                                                         #
+#    DancingPeasant                                                           #
 #                                                                             #
-#    Description!!                                                            #
+#    To be killed. Just a place to test the underlying module                 #
 #                                                                             #
 #    Copyright (C) Michael Imelfort                                           #
 #                                                                             #
@@ -25,7 +25,7 @@
 ###############################################################################
 
 __author__ = "Michael Imelfort"
-__copyright__ = "Copyright 2013"
+__copyright__ = "Copyright 2014"
 __credits__ = ["Michael Imelfort"]
 __license__ = "GPLv3"
 __version__ = "0.0.1"
@@ -49,9 +49,9 @@ import sys
 def doWork(args):
     """Wrapper function to allow easy profiling"""
     # hook into core project code here. For example:
-    from dancingpeasant.DancingPeasant import TemplateClass
-    TC = TemplateClass()
-    TC.sayHi()
+    from dancingpeasant.DancingPeasant import BaseFile
+    BF = BaseFile()
+    BF.sayHi()
 
 ###############################################################################
 ###############################################################################
