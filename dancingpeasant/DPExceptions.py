@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 ###############################################################################
 #                                                                             #
-#    DancingPeasant                                                           #
+#    DPExceptions.py                                                          #
 #                                                                             #
-#    To be killed. Just a place to test the underlying module                 #
+#    All the exceptions we'd like to raise.                                   #
 #                                                                             #
 #    Copyright (C) Michael Imelfort                                           #
 #                                                                             #
@@ -38,58 +38,18 @@ __status__ = "Dev"
 ###############################################################################
 ###############################################################################
 
-import argparse
-import sys
+class DP_Exception(BaseException): pass
+
+#------------------------------------------------------------------------------
+# FILE IO
+class DP_FileException(DP_Exception): pass
+class DP_FileAlreadyOpenException(DP_FileException): pass
+class DP_FileNotOpenException(DP_FileException): pass
+class DP_FileNotFoundException(DP_FileException): pass
+class DP_FileError(DP_FileException): pass
+
 
 ###############################################################################
 ###############################################################################
 ###############################################################################
 ###############################################################################
-
-def doWork(args):
-    """Wrapper function to allow easy profiling"""
-    # hook into core project code here. For example:
-    from dancingpeasant.DancingPeasant import BaseFile
-    BF = BaseFile()
-    BF.createNewFile("test.db", "1.0")
-    BF.closeFile()
-    BF.openFile("test.db")
-    BF.closeFile()
-
-###############################################################################
-###############################################################################
-###############################################################################
-###############################################################################
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    #parser.add_argument('positional_arg', help="Required")
-    #parser.add_argument('positional_arg2', type=int, help="Integer argument")
-    #parser.add_argument('positional_arg3', nargs='+', help="Multiple values")
-    #parser.add_argument('-X', '--optional_X', action="store_true", default=False, help="flag")
-
-    # parse the arguments
-    args = parser.parse_args()
-
-    # profiling happens here. If you'd like to track the speed your code runs at
-    # then set the following to True and voila!
-    if(False):
-        import cProfile
-        cProfile.run('doWork(args)', 'profile')
-        ##########################################
-        ##########################################
-        # Use this in python console!
-        #import pstats
-        #p = pstats.Stats('prof')
-        #p.sort_stats('cumulative').print_stats(10)
-        #p.sort_stats('time').print_stats(10)
-        ##########################################
-        ##########################################
-    else:
-        doWork(args)
-
-###############################################################################
-###############################################################################
-###############################################################################
-###############################################################################
-
