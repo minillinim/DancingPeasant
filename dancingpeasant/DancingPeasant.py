@@ -179,9 +179,9 @@ class BaseFile():
         """add a new table to the DB
 
         tableName should be one unique *nonfancy* word
-        columns should be a string that looks something like:
+        columns should be a dict that looks something like:
 
-            "Id INT, Name TEXT, Price INT"
+            {"Id" : "INT", "Name" : "TEXT", "Price" : "INT"}
         """
 
         # sanity checks
