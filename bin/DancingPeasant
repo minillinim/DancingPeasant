@@ -50,11 +50,13 @@ def doWork(args):
     """Wrapper function to allow easy profiling"""
     # hook into core project code here. For example:
     from dancingpeasant.DancingPeasant import BaseFile
-    BF = BaseFile()
-    BF.createNewFile("test.db", "1.0")
-    BF.closeFile()
-    BF.openFile("test.db")
-    BF.closeFile()
+    BF = BaseFile(verbosity=3)
+    BF.createNewFile("test.gm", "GroopMdb", "1.0")
+    if BF.isOpen():
+        BF.closeFile()
+    BF.openFile("test.gm")
+    if BF.isOpen():
+        BF.closeFile()
 
 ###############################################################################
 ###############################################################################

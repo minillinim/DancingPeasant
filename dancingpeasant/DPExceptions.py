@@ -48,6 +48,16 @@ class DP_FileNotOpenException(DP_FileException): pass
 class DP_FileNotFoundException(DP_FileException): pass
 class DP_FileError(DP_FileException): pass
 
+#------------------------------------------------------------------------------
+# STRUCTUAL
+class DP_TableException(DP_Exception): pass
+class DP_InvalidDataTypeException(DP_TableException): pass
+
+
+#------------------------------------------------------------------------------
+# HISTORY
+class DP_HistoryException(DP_Exception): pass
+
 
 ###############################################################################
 ###############################################################################
