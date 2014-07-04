@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 ###############################################################################
 #                                                                             #
-#    DancingPeasant.py                                                        #
+#    baseFile.py                                                              #
 #                                                                             #
-#    Implement a collection of CSV files in SQLite land.                      #
+#    Implement a collection of CSV files in SQLite land: basic file utils     #
 #                                                                             #
 #    Copyright (C) Michael Imelfort                                           #
 #                                                                             #
@@ -28,7 +28,7 @@ __author__ = "Michael Imelfort"
 __copyright__ = "Copyright 2014"
 __credits__ = ["Michael Imelfort"]
 __license__ = "GPLv3"
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 __maintainer__ = "Michael Imelfort"
 __email__ = "mike@mikeimelfort.com"
 __status__ = "Dev"
@@ -45,7 +45,7 @@ import sys
 import time
 
 # local imports
-from dancingpeasant.DPExceptions import *
+from dancingPeasant.exceptions import *
 
 ###############################################################################
 ###############################################################################
@@ -98,7 +98,7 @@ class BaseFile():
         self.meta["fileType"] = self.getFileType()
         self.meta["version"] = self.getVersion()
 
-        self.chatter("%s file: %s (version: %s) opened successfully" % (self.meta["fileType"], fileName, self.meta["version"]), 1)
+        self.chatter("%s file: %s (version: %s) opened successfully" % (self.meta["fileType"], fileName, self.meta["version"]), 0)
 
         # return the fileType to the calling function
         return self.meta["fileType"]
@@ -123,7 +123,6 @@ class BaseFile():
                       type,                 # what type of file is this? StoreMdb? TrackMdb? etc...
                       version,              # version of this file (is force versioning a good idea?)
                       force=False,          # should we check to see if this is a wise move?
-                      verbose=False         # how much chitter do we want?
                       ):
         """Create a new DP database file
 
@@ -171,6 +170,19 @@ class BaseFile():
 
 #------------------------------------------------------------------------------
 # TABLE MANIPULATION
+
+    def getCursor(self):
+        """return the cursor to this DB"""
+        # sanity checks
+        if self._connection is None:
+            raise DP_FileNotOpenException()
+        return self._connection.cursor()
+
+    def commit(self):
+        """commit changes to the DB"""
+        if self._connection is None:
+            raise DP_FileNotOpenException()
+        self._connection.commit()
 
     def _addTable(self,
                  tableName,         # name of the new table
@@ -244,7 +256,7 @@ class BaseFile():
         try:
             if checkType:
                 if type not in self.validHistoryTypes:
-                    raise DP_HistoryException()
+                    raise DP_InvalidHistoryTypeException()
             cur = self._connection.cursor()
             cur.execute("INSERT INTO history (time, type, event) VALUES ('%d', '%s', '%s')" % (int(time.time()), type, event))
             self._connection.commit()
@@ -285,7 +297,7 @@ class BaseFile():
         try:
             cur = self._connection.cursor()
             # the type is the first version log
-            cur.execute("SELECT * FROM history WHERE type='%s' ORDER BY time ASC" % type)
+            cur.execute("SELECT event FROM history WHERE type='%s' ORDER BY time ASC" % type)
             rows = cur.fetchall()
             if index is not None:
                 return rows[index]
@@ -299,47 +311,23 @@ class BaseFile():
         """simple wrapper used to get the current version of this file"""
         version_row = self._getHistory("version", index=-1, checkType=False)
         if len(version_row) > 0:
-            return version_row[2]
+            return version_row[0]
         return -1
 
     def getFileType(self):
         """simple wrapper used to get the type of this file"""
         version_row = self._getHistory("version", index=0, checkType=False)
         if len(version_row) > 0:
-            return version_row[2]
+            return version_row[0]
         return "unset"
 
-#------------------------------------------------------------------------------
-# SQL WRAPPERS
-
-    def simpleSelect(self,
-                     columns,           # select these columns
-                     table,             # from this table
-                     condition=None,    # where these conditions are met
-                     order=None         # order = ('col', ['ASC', 'DESC' or None])
-                     ):
-        """ wrap select statements comming in from the outside world
-
-        columns: is an ordered list of column names in the table ['col1', 'col2', ... ] or ['*'] for all
-        table: is a single string. EX: 'bob'
-        condition: is a string which states the SQL condition. i.e. the part that comes after the where:
-
-            "type='big' or color='red'"
-
-        Note: the use of single quotes on the values. This is important.
-        order is a string which dictates the ordering of the results. EX: 'col, asc'
-
-        This function is a generator of rows.
-
-        """
-        pass
 #------------------------------------------------------------------------------
 # CHITTER
     def chatter(self,
                 message,            # what to say
                 verbosityLevel):    # when to say it
         """Handler for chatting with the user"""
-        if verbosityLevel >= self.meta["verbosity"]:
+        if self.meta["verbosity"] >= verbosityLevel:
             print message
 
     def promptOnOverwrite(self, entity, entityType="File"):

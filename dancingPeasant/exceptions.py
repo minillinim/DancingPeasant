@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 ###############################################################################
 #                                                                             #
-#    DPExceptions.py                                                          #
+#    exceptions.py                                                            #
 #                                                                             #
 #    All the exceptions we'd like to raise.                                   #
 #                                                                             #
@@ -53,10 +53,15 @@ class DP_FileError(DP_FileException): pass
 class DP_TableException(DP_Exception): pass
 class DP_InvalidDataTypeException(DP_TableException): pass
 
-
 #------------------------------------------------------------------------------
 # HISTORY
 class DP_HistoryException(DP_Exception): pass
+class DP_InvalidHistoryTypeException(DP_HistoryException): pass
+
+#------------------------------------------------------------------------------
+# INTERFACE
+class DP_InterfaceException(DP_Exception): pass
+class DP_UnsetDBException(DP_InterfaceException): pass
 
 
 ###############################################################################

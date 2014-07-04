@@ -49,7 +49,7 @@ import sys
 def doWork(args):
     """Wrapper function to allow easy profiling"""
     # hook into core project code here. For example:
-    from dancingpeasant.DancingPeasant import BaseFile
+    from dancingPeasant.baseFile import BaseFile
     BF = BaseFile(verbosity=3)
     BF.createNewFile("test.gm", "GroopMdb", "1.0")
     if BF.isOpen():
