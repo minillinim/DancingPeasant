@@ -28,7 +28,7 @@ __author__ = "Michael Imelfort"
 __copyright__ = "Copyright 2014"
 __credits__ = ["Michael Imelfort"]
 __license__ = "GPLv3"
-__version__ = "0.0.2"
+__version__ = "0.1.0"
 __maintainer__ = "Michael Imelfort"
 __email__ = "mike@mikeimelfort.com"
 __status__ = "Dev"
@@ -67,7 +67,7 @@ class BaseFile():
                                   ]
 
         # list of valid data types for sqllite3
-        self.validDataTypes = ['int', 'real', 'text', 'blob']
+        self.validDataTypes = ['int', 'real', 'text', 'blob', 'integer primary key autoincrement']
 
 #------------------------------------------------------------------------------
 # BASIC FILE IO

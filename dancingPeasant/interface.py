@@ -30,7 +30,7 @@ __author__ = "Michael Imelfort"
 __copyright__ = "Copyright 2014"
 __credits__ = ["Michael Imelfort"]
 __license__ = "GPLv3"
-__version__ = "0.0.2"
+__version__ = "0.1.0"
 __maintainer__ = "Michael Imelfort"
 __email__ = "mike@mikeimelfort.com"
 __status__ = "Dev"
@@ -100,7 +100,8 @@ class Interface():
     def insert(self,
                table,       # into this table
                columns,     # these columns
-               values       # list of tuples of values
+               values,      # list of tuples of values
+               debug=False
                ):
         """Speedy import of bulk data into SQL
 
@@ -108,12 +109,49 @@ class Interface():
         cols: is an ordered list of column names in the table ['col1', 'col2', ... ]is a list of columns to insert into
         vals is a list of tuples of values to insert
 
+        Note: the use of single quotes on the values. This is important.
+
         the ordering of cols and vals should make sense
-        vals should be quoted strings
         """
-        insert_str = "INSERT INTO %s (%s) VALUES (%s);" % (table, ", ".join(columns), ", ".join(["?" for i in columns]))
+        insert_str = "INSERT INTO %s (%s) VALUES (%s)" % (table, ", ".join(columns), ", ".join(["?" for i in columns]))
+        if debug:
+            print insert_str
+            print values
         cur = self.db.getCursor()
         cur.executemany(insert_str, values)
+        self.db.commit()
+
+    def updateSingle(self,
+               table,           # into this table
+               columns,         # these columns
+               values,          # list of tuples of values
+               condition=None,  # where to insert
+               debug=False
+               ):
+        """Update a single value in the DB
+
+        table: is a single string. EX: 'bob'
+        cols: is an ordered list of column names in the table ['col1', 'col2', ... ]is a list of columns to insert into
+        vals is a list of tuples of values to insert
+
+        the ordering of cols and vals should make sense
+
+        condition: is a string which states the SQL condition. i.e. the part that comes after the where:
+
+            "type='big' or color='red'"
+
+        Note: the use of single quotes on the values. This is important.
+        """
+        tmp = []
+        for i in range(len(columns)):
+            tmp.append("%s=%s" % (columns[i], values[i]))
+        insert_str = "UPDATE %s SET %s" % (table, ", ".join(tmp))
+        if condition is not None:
+            insert_str += " WHERE %s" % (condition)
+        if debug:
+            print insert_str
+        cur = self.db.getCursor()
+        cur.execute(insert_str)
         self.db.commit()
 
     def select(self,
