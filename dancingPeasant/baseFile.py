@@ -28,7 +28,7 @@ __author__ = "Michael Imelfort"
 __copyright__ = "Copyright 2014"
 __credits__ = ["Michael Imelfort"]
 __license__ = "GPLv3"
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __maintainer__ = "Michael Imelfort"
 __email__ = "mike@mikeimelfort.com"
 __status__ = "Dev"
@@ -96,7 +96,7 @@ class BaseFile():
         # time to set these variables
         self.meta["fileName"] = fileName
         self.meta["fileType"] = self.getFileType()
-        self.meta["version"] = self.getVersion()
+        self.meta["version"] = str(self.getVersion())
 
         self.chatter("%s file: %s (version: %s) opened successfully" % (self.meta["fileType"], fileName, self.meta["version"]), 0)
 
@@ -160,7 +160,7 @@ class BaseFile():
                         "type" : "TEXT",            # type of history to log
                         "event" : "TEXT"            # log message
                        },
-                       force=False)
+                       force=force)
 
         # add the creation time, type and version of this file
         self.logMessage("created")
@@ -245,7 +245,6 @@ class BaseFile():
     def _addHistory(self,
                     type,               # the type of event: 'message', 'version', 'warning' or 'error'
                     event,              # the message / event to add to the history
-                    checkType=True      # should we check to see if the history type is valid?
                     ):
         """Add a history event to the file
 
@@ -254,9 +253,8 @@ class BaseFile():
         if self._connection is None:
             raise DP_FileNotOpenException()
         try:
-            if checkType:
-                if type not in self.validHistoryTypes:
-                    raise DP_InvalidHistoryTypeException()
+            if type not in self.validHistoryTypes:
+                raise DP_InvalidHistoryTypeException()
             cur = self._connection.cursor()
             cur.execute("INSERT INTO history (time, type, event) VALUES ('%d', '%s', '%s')" % (int(time.time()), type, event))
             self._connection.commit()
@@ -266,38 +264,43 @@ class BaseFile():
     def logMessage(self, message):
         """Messages are the basic logging unit.
         Feel free to use plenty of these"""
-        self._addHistory('message', str(message), checkType=False)
+        self._addHistory('message', str(message))
 
     def logWarning(self, warning):
         """Warnings should be about possible inconsistencies in the
         structure of the file. not for problems in the workflow / procedure
         used to build, maintain or access the structure"""
-        self._addHistory('warning', str(warning), checkType=False)
+        self._addHistory('warning', str(warning))
 
     def logError(self, error):
         """Errors should be about known inconsistencies in the
         structure of the file. not for problems in the workflow / procedure
         used to build, maintain or access the structure"""
-        self._addHistory('error', str(error), checkType=False)
+        self._addHistory('error', str(error))
 
     def logVersion(self, version):
         """A version log is either a version number or a description of the
         filetype itself. By convention, the first version log is the filetype
         and the last version log is the current version"""
-        self._addHistory('version', str(version), checkType=False)
+        self._addHistory('version', str(version))
 
     def _getHistory(self,
                     type,              # type of history to fetch
                     index=None,        # index of a particular record
-                    checkType=False    # should we check the type of the history
+                    fromTime=None      # get history at or after this point
                     ):
         """Return the values of a particular type of history log"""
+        if type not in self.validHistoryTypes:
+            raise DP_InvalidHistoryTypeException()
+
         if self._connection is None:
             raise DP_FileNotOpenException()
         try:
             cur = self._connection.cursor()
-            # the type is the first version log
-            cur.execute("SELECT event FROM history WHERE type='%s' ORDER BY time ASC" % type)
+            if fromTime == None:
+                cur.execute("SELECT event,time FROM history WHERE type='%s' ORDER BY time ASC" % type)
+            else:
+                cur.execute("SELECT event,time FROM history WHERE type='%s' and time>='%s' ORDER BY time ASC" % (type, str(fromTime)))
             rows = cur.fetchall()
             if index is not None:
                 return rows[index]
@@ -307,16 +310,28 @@ class BaseFile():
             raise DP_FileError("ERROR %s:" % e.args[0])
         return []
 
+    def getMessages(self, fromTime=None):
+        """Get messages from history table"""
+        return self._getHistory('message', fromTime=fromTime)
+
+    def getWarnings(self, fromTime=None):
+        """Get warnings from history table"""
+        return self._getHistory('warning', fromTime=fromTime)
+
+    def getErrors(self, fromTime=None):
+        """Get errors from history table"""
+        return self._getHistory('error', fromTime=fromTime)
+
     def getVersion(self):
         """simple wrapper used to get the current version of this file"""
-        version_row = self._getHistory("version", index=-1, checkType=False)
+        version_row = self._getHistory("version", index=-1)
         if len(version_row) > 0:
             return version_row[0]
-        return -1
+        return None
 
     def getFileType(self):
         """simple wrapper used to get the type of this file"""
-        version_row = self._getHistory("version", index=0, checkType=False)
+        version_row = self._getHistory("version", index=0)
         if len(version_row) > 0:
             return version_row[0]
         return "unset"

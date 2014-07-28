@@ -30,7 +30,7 @@ __author__ = "Michael Imelfort"
 __copyright__ = "Copyright 2014"
 __credits__ = ["Michael Imelfort"]
 __license__ = "GPLv3"
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __maintainer__ = "Michael Imelfort"
 __email__ = "mike@mikeimelfort.com"
 __status__ = "Dev"
@@ -51,6 +51,30 @@ from dancingPeasant.baseFile import BaseFile
 ###############################################################################
 ###############################################################################
 ###############################################################################
+
+class Condition():
+    """Class for specifying conditions for select / update SQL statements"""
+    def __init__(self,
+                 e1,            # first entity in the condition
+                 joiner,        # boolean joiner
+                 e2='?',        # second entity
+                 ):
+        """To get type='big' use: Conditon("type", "=", "'big'")
+        Note: the use of single quotes on the values. This is important.
+        Nest condition instances with the appropriate joiners to get more
+        complex conditions
+        """
+
+        self.data = [e1, joiner, e2]
+
+    def __str__(self):
+        return "(%s %s %s)" % tuple([str(i) for i in self.data])
+
+###############################################################################
+###############################################################################
+###############################################################################
+###############################################################################
+
 
 class Interface():
     """Class for implementing an interface to a SQL database"""
@@ -121,55 +145,41 @@ class Interface():
         cur.executemany(insert_str, values)
         self.db.commit()
 
-    def updateSingle(self,
+    def update(self,
                table,           # into this table
                columns,         # these columns
                values,          # list of tuples of values
-               condition=None,  # where to insert
+               condition,       # the conditions for updating
                debug=False
                ):
         """Update a single value in the DB
 
         table: is a single string. EX: 'bob'
         cols: is an ordered list of column names in the table ['col1', 'col2', ... ]is a list of columns to insert into
-        vals is a list of tuples of values to insert
-
-        the ordering of cols and vals should make sense
-
-        condition: is a string which states the SQL condition. i.e. the part that comes after the where:
-
-            "type='big' or color='red'"
-
-        Note: the use of single quotes on the values. This is important.
+        vals is list of a tuples of values to insert
+        condition: is an instance of the class Condition
         """
-        tmp = []
-        for i in range(len(columns)):
-            tmp.append("%s=%s" % (columns[i], values[i]))
-        insert_str = "UPDATE %s SET %s" % (table, ", ".join(tmp))
-        if condition is not None:
-            insert_str += " WHERE %s" % (condition)
+        insert_str = "UPDATE %s SET " % (table)
+        insert_str += ", ".join(["%s=?" % (col) for col in columns])
+        insert_str += " WHERE %s" % str(condition)
         if debug:
             print insert_str
         cur = self.db.getCursor()
-        cur.execute(insert_str)
+        cur.executemany(insert_str, values)
         self.db.commit()
 
     def select(self,
                table,             # from this table
                columns,           # select these columns
                condition=None,    # where these conditions are met
-               order=None         # order = ('col', ['ASC', 'DESC' or None])
+               order=None,        # order = ('col', ['ASC', 'DESC' or None])
+               debug=False
                ):
         """ wrap select statements comming in from the outside world
 
         columns: is an ordered list of column names in the table ['col1', 'col2', ... ] or ['*'] for all
         table: is a single string. EX: 'bob'
-        condition: is a string which states the SQL condition. i.e. the part that comes after the where:
-
-            "type='big' or color='red'"
-
-        Note: the use of single quotes on the values. This is important.
-
+        condition: is an instance of the class Condition
         order: is a tuple which dictates the ordering of the results. EX: ('col', 'ASC')
 
         This function is a generator of rows.
@@ -177,11 +187,12 @@ class Interface():
         """
         select_str = "SELECT %s FROM %s" % (", ".join(columns), table)
         if condition is not None:
-            select_str += " WHERE %s" % condition
+            select_str += " WHERE %s" % str(condition)
         if order is not None:
             select_str += " ORDER BY %s %s" % (order[0], order[1])
 
-        #print select_str
+        if debug:
+            print select_str
 
         cur = self.db.getCursor()
         cur.execute(select_str)
