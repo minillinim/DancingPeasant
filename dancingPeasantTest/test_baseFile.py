@@ -84,7 +84,7 @@ class BaseFileTests(unittest.TestCase):
                           force=True)
         self.done()
 
-    def testInsertRows(self):
+    def testInsert(self):
         self.open()
         IF = Interface("test.dp")
         IF.db = self.BF
@@ -96,19 +96,37 @@ class BaseFileTests(unittest.TestCase):
         IF.insert('testing', ['time', 'thing', 'size'], to_db)
         self.done()
 
-    def testRecallRows(self):
+    def testSelect(self):
         self.open()
         IF = Interface("test.dp")
         IF.db = self.BF
         C = Condition("thing", "=", "'fish'")
-        rows = IF.select("testing", ['time'], C)
+        rows = IF.select("testing", ['time'], condition=C)
         self.assertTrue(len(rows)==2)
         C = Condition("thing", "=", "'dog'")
-        rows = IF.select("testing", ['time'], C)
+        rows = IF.select("testing", ['time'], condition=C)
         self.assertTrue(len(rows)==1)
         self.done()
 
-    def testUpdateRows(self):
+    def testSelectCondition(self):
+        """
+        DB looks like:
+        1 cat  5
+        2 dog  6
+        3 fish 8
+        4 goat 0
+        5 fish 12
+        """
+        self.open()
+        IF = Interface("test.dp")
+        IF.db = self.BF
+        C = Condition(Condition("thing", "="), "or", Condition("size", "<"))
+        values = ("fish", 6)
+        rows = IF.select("testing", ['*'], condition=C, values=values)
+        self.assertTrue(len(rows)==4)
+        self.done()
+
+    def testUpdate(self):
         self.open()
         IF = Interface("test.dp")
         IF.db = self.BF
@@ -128,10 +146,10 @@ class BaseFileTests(unittest.TestCase):
         """
 
         C = Condition("thing", "=", "'fish'")
-        rows = IF.select("testing", ['time'], C)
+        rows = IF.select("testing", ['time'], condition=C)
         self.assertTrue(len(rows)==0)
         C = Condition("size", ">=", "'18'")
-        rows = IF.select("testing", ['time'], C)
+        rows = IF.select("testing", ['time'], condition=C)
         self.assertTrue(len(rows)==3)
 
         # more complex updates (proxy as test for more complex selects
@@ -141,14 +159,21 @@ class BaseFileTests(unittest.TestCase):
         data = [(7, 'frog')]
         IF.update('testing', ['time'], data, C)
         C = Condition("thing", "=", "'yak'")
-        rows = IF.select("testing", ['time'], C)
+        rows = IF.select("testing", ['time'], condition=C)
         # should affect 1 row
         self.assertTrue(len(rows)==1)
         # should be the yak row which should now have time = 7
         self.assertTrue(rows[0][0]==7)
 
+        data = [(7,8,"pig")]
+        IF.update('testing', ['time', 'size', 'thing'], data, 1)
+        C = Condition("time", "=", 7)
+        rows = IF.select("testing", ['time'], condition=C)
+        # should affect 1 row
+        self.assertTrue(len(rows)==5)
 
         self.done()
+
 
 def main():
     unittest.main()

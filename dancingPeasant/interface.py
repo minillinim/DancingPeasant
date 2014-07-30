@@ -30,7 +30,7 @@ __author__ = "Michael Imelfort"
 __copyright__ = "Copyright 2014"
 __credits__ = ["Michael Imelfort"]
 __license__ = "GPLv3"
-__version__ = "0.1.1"
+__version__ = "0.1.4"
 __maintainer__ = "Michael Imelfort"
 __email__ = "mike@mikeimelfort.com"
 __status__ = "Dev"
@@ -172,6 +172,7 @@ class Interface():
                table,             # from this table
                columns,           # select these columns
                condition=None,    # where these conditions are met
+               values=None,       # values to use in the condition
                order=None,        # order = ('col', ['ASC', 'DESC' or None])
                debug=False
                ):
@@ -180,6 +181,7 @@ class Interface():
         columns: is an ordered list of column names in the table ['col1', 'col2', ... ] or ['*'] for all
         table: is a single string. EX: 'bob'
         condition: is an instance of the class Condition
+        values: is a tuple of values which can be used with the condition statement
         order: is a tuple which dictates the ordering of the results. EX: ('col', 'ASC')
 
         This function is a generator of rows.
@@ -195,7 +197,10 @@ class Interface():
             print select_str
 
         cur = self.db.getCursor()
-        cur.execute(select_str)
+        if values is None:
+            cur.execute(select_str)
+        else:
+            cur.execute(select_str, values)
         return cur.fetchall()
 
 ###############################################################################
