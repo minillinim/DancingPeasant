@@ -30,7 +30,7 @@ __author__ = "Michael Imelfort"
 __copyright__ = "Copyright 2014"
 __credits__ = ["Michael Imelfort"]
 __license__ = "GPLv3"
-__version__ = "0.1.4"
+__version__ = "0.1.5"
 __maintainer__ = "Michael Imelfort"
 __email__ = "mike@mikeimelfort.com"
 __status__ = "Dev"
@@ -125,6 +125,7 @@ class Interface():
                table,       # into this table
                columns,     # these columns
                values,      # list of tuples of values
+               commit=True, # commit these changes to the DB?
                debug=False
                ):
         """Speedy import of bulk data into SQL
@@ -143,13 +144,15 @@ class Interface():
             print values
         cur = self.db.getCursor()
         cur.executemany(insert_str, values)
-        self.db.commit()
+        if commit:
+            self.db.commit()
 
     def update(self,
                table,           # into this table
                columns,         # these columns
                values,          # list of tuples of values
                condition,       # the conditions for updating
+               commit=True,     # commit these changes to the DB?
                debug=False
                ):
         """Update a single value in the DB
@@ -166,7 +169,8 @@ class Interface():
             print insert_str
         cur = self.db.getCursor()
         cur.executemany(insert_str, values)
-        self.db.commit()
+        if commit:
+            self.db.commit()
 
     def select(self,
                table,             # from this table
